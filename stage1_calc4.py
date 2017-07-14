@@ -236,7 +236,7 @@ class Calculator:
                         try:
                             res = eval(op_string)
                             print(op_string + "=" + str(res))
-                            self.result.append(query + "=" + str(res))
+                            self.result.append(op_string + "=" + str(res))
                         except:
                             self.result.append("error")
                             traceback.print_exc()
@@ -245,7 +245,7 @@ class Calculator:
                         try:
                             res = eval(op_string)
                             print(op_string + "=" + str(res))
-                            self.result.append(query + "=" + str(res))
+                            self.result.append(op_string  + "=" + str(res))
                         except:
                             self.result.append("error")
                             traceback.print_exc()
@@ -254,7 +254,7 @@ class Calculator:
                         try:
                             res = eval(op_string)
                             print(op_string + "=" + str(res))
-                            self.result.append(query + "=" + str(res))
+                            self.result.append(op_string  + "=" + str(res))
                         except:
                             self.result.append("error")
                             traceback.print_exc()
@@ -263,7 +263,7 @@ class Calculator:
                         try:
                             res = eval(op_strig)
                             print(op_string + "=" + str(res))
-                            self.result.append(query + "=" + str(res))
+                            self.result.append(op_string  + "=" + str(res))
                         except:
                             self.result.append("error")
                             traceback.print_exc()
@@ -272,7 +272,7 @@ class Calculator:
                         try:
                             res = eval(op_string)
                             print(op_string + "=" + str(res))
-                            self.result.append(query + "=" + str(res))
+                            self.result.append(op_string  + "=" + str(res))
                         except:
                             self.result.append("error")
                             traceback.print_exc()
