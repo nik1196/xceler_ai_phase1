@@ -2,7 +2,7 @@
 from flask import Flask, jsonify, request
 import re
 import socket
-from stage1_calc3 import *
+from stage1_calc4 import *
 
 app = Flask(__name__)
 @app.route('/', methods = ['GET', 'POST'])
@@ -13,7 +13,8 @@ def input_process():
 def input_process2():
         print(request)
         query = request.json['input']
-        result = calc(query)
+	x = Calculator(query)
+        result = x.calc()
         
         print(result)
         if result:
