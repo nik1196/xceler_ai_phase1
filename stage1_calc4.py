@@ -30,6 +30,8 @@ class Calculator:
                              "minus", "by","times","mod"]
         self.priority = {"number":0, "tens":1, "hundred":2\
                     ,"thousand":3, "million":4, "billion": 5,"operator":-1, "sep":-2, "converted":-2}
+        self.recognised_words = ["add", "subtract", "multiply", "divide", "mod", "sum", "product", "difference",\
+                                 "quotient", "modulo", "remainder", "of", "and","."]
         
         self.expressions = []
         self.sentential_queries = []
@@ -80,7 +82,10 @@ class Calculator:
                     cur_multiple *= self.digit[self.cur_num[j]]
                     #print("cur_ multiple=" + str(self.digit[self.cur_num[j]]))
                 else:
-                    cur_multiple += self.digit[self.cur_num[j]]
+                    if len(self.cur_num) == 1:
+                        cur_multiple = self.digit[self.cur_num[j]]
+                    else:
+                        cur_multiple += self.digit[self.cur_num[j]]
                     #print("cur_ multiple=" + str(self.digit[self.cur_num[j]]))
          self.multiple.append(cur_multiple)
          print("appending " + str(cur_multiple))
@@ -114,7 +119,7 @@ class Calculator:
                 inner_loop = loop_count+1
                 while(inner_loop < len(self.expr)):
                     if self.expr[inner_loop][1] == "number":
-                        self.num_index_range[0] = inner_loop
+                        self.num_index_range = [inner_loop,inner_loop]
                         self.cur_num.append(self.expr[inner_loop][0])
                         self.convertAndResetNumber(inner_loop+1)
                         self.num_index_range = [-1,-1]
@@ -147,7 +152,10 @@ class Calculator:
                     self.expr.pop(loop_count)
                     self.expr.insert(loop_count, replacement_tuple)
                     if self.expr[loop_count-1][1] != "numeric":
+                        print(self.num_index_range)
                         self.convertAndResetNumber(loop_count)
+                        print(self.num_index_range)
+                        loop_count = self.num_index_range[0] + 1
                         self.num_index_range = [-1,-1]
                         cur_multiple = 1
             elif self.expr[loop_count][1] == "others":
@@ -184,12 +192,22 @@ class Calculator:
             loop_count += 1
         if len(self.cur_num) > 0:
             self.convertAndResetNumber(len(self.expr))
+        for i in range(len(self.expr)):
+            if self.expr[i][0] == "-" and self.expr[i][1] == "others":
+                self.expr.pop(i)
+                self.expr.insert(i, ("-", "minus"))
         print("After converting: ")
         print(self.expr)
 
 
     def separateForms(self):
-        words = [str(word) for (word,etc) in self.expr]
+        words = []
+        #words = [word for (word,etc) in self.expr]
+        for (val1, val2) in self.expr:
+            if val2 == "others":
+                if val1 in self.recognised_words:
+                    words.append(str(val1))
+            else: words.append(str(val1))
         joinedQuery = "".join(words)
         print(joinedQuery)
         splitQueries = re.split(self.separator_sym, joinedQuery)
@@ -202,7 +220,7 @@ class Calculator:
             if query == "":
                 index += 1
                 continue
-            if query[0].isdigit() or query.startswith("("):
+            if query[0].isdigit() or query.startswith("(") or query.startswith("-"):
                 try:
                     res = eval(query)
                     print(query + "=" + str(res))
@@ -213,8 +231,9 @@ class Calculator:
             else:
                 cur_index = index+1
                 print("cur_index:" + str(cur_index))
+                query1 = query + "s"
                 op_list = []
-                op_list.insert(0,query)
+                op_list.insert(0,query1)
                 while(cur_index < len(splitQueries)):
                     if splitQueries[cur_index].isdigit():
                         op_list.append(splitQueries[cur_index])
@@ -226,9 +245,9 @@ class Calculator:
                 print("after joining sentential forms")
                 print(splitQueries)
                 if splitQueries[index][0].isalpha():
-                    nums = re.split("(\d)",splitQueries[index])
+                    nums = re.split("(\D+)",splitQueries[index])
                     for num in nums:
-                        if num == "":
+                        if num in ["", "s"]:
                             nums.remove(num)
                     print(nums)
                     if nums[0].startswith("p"):
@@ -267,7 +286,7 @@ class Calculator:
                         except:
                             self.result.append("error")
                             traceback.print_exc()
-                    if nums[0].startswith("m"):
+                    if nums[0].startswith("m") or nums[0].startswith("r"):
                         op_string = "%".join(nums[1:])
                         try:
                             res = eval(op_string)
