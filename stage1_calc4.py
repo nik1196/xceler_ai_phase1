@@ -23,9 +23,9 @@ class Calculator:
         #map for tagging
         self.patterns = [(self.number, "number"),(self.tens, "tens"),("hundred", "hundred"),\
                     ("thousand", "thousand"), ("million", "million"), \
-                    ("billion", "billion"),("plus","plus"), ("minus","minus"),("negative","minus"),\
-                         ("positive","plus"),("point","point"),('divided by',"by"),("by|upon", "by"), ("times|multiplied by","times")\
-                         ,("mod|modulo","mod"),("\d+", "numeric"), (".+?","others")]
+                    ("billion", "billion"),("plus|\+","plus"), ("minus|\-","minus"),("negative","minus"),\
+                         ("positive","plus"),("point","point"),('divided by',"by"),("by|upon", "by"), ("times|\*|multiplied by","times")\
+                         ,("mod|modulo|%","mod"),("\d+", "numeric"), (".+?","others")]
         self.pattern_tags = ["number", "tens", "hundred", "thousand", "million", "billion", "plus",\
                              "minus", "by","times","mod"]
         self.priority = {"number":0, "tens":1, "hundred":2\
