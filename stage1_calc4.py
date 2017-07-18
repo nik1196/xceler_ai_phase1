@@ -1,4 +1,4 @@
-import re, sys, traceback, nltk
+import re, sys, traceback, nltk, __future__
 class Calculator:
     """convert all numbers written as words into numerics, separate the individual queries, and pass them to the os"""
 #############################init vars for evaluation###########################
@@ -29,9 +29,9 @@ class Calculator:
         self.pattern_tags = ["number", "tens", "hundred", "thousand", "million", "billion", "plus",\
                              "minus", "by","times","mod"]
         self.priority = {"number":0, "tens":1, "hundred":2\
-                    ,"thousand":3, "million":4, "billion": 5,"operator":-1, "sep":-2, "converted":-2}
+                    ,"thousand":3, "million":4, "billion": 5,"operator":-1, "sep":-2, "converted":-1}
         self.recognised_words = ["add", "subtract", "multiply", "divide", "mod", "sum", "product", "difference",\
-                                 "quotient", "modulo", "remainder", "of", "and","."]
+                                 "quotient", "modulo", "remainder", "of", "and",".","(",")",","]
         
         self.expressions = []
         self.sentential_queries = []
@@ -60,7 +60,7 @@ class Calculator:
          for j in range(self.num_index_range[0], self.num_index_range[1]+1):
              #print("number starting from " + str(self.num_index_range[0]))
              #print(self.expr)
-             #print("popping expr " + str(self.num_index_range[0]))
+             print("popping expr " + str(self.num_index_range[0]))
              self.expr.pop(self.num_index_range[0])
          self.expr.insert(self.num_index_range[0], (cur_operand, "converted"))
          #print(self.expr)
@@ -110,6 +110,7 @@ class Calculator:
                 else:
                     self.bad_expr = False
             if self.expr[loop_count][1] == "point":
+                print("decimal")
                 replacement_tuple=(".","others")
                 self.expr.pop(loop_count)
                 self.expr.insert(loop_count, replacement_tuple)
@@ -130,8 +131,11 @@ class Calculator:
                 print(self.expr)
                 print(len(self.expr),loop_count)
                 if loop_count < len(self.expr):
-                    while(self.expr[loop_count][1] != "others"):
+                    while self.expr[loop_count][1] == "number":
+                        print(self.expr[loop_count])
                         self.expr.pop(loop_count)
+                loop_count -=1
+                print("multiple priority:" + str(self.prev_prio))
                     
                 
                 
@@ -151,13 +155,12 @@ class Calculator:
                     replacement_tuple = (self.operator_sym[self.expr[loop_count][1]], self.expr[loop_count][1])
                     self.expr.pop(loop_count)
                     self.expr.insert(loop_count, replacement_tuple)
-                    if self.expr[loop_count-1][1] != "numeric":
+                    if self.expr[loop_count-1][1] not in ["numeric","converted"]:
                         print(self.num_index_range)
                         self.convertAndResetNumber(loop_count)
                         print(self.num_index_range)
                         loop_count = self.num_index_range[0] + 1
                         self.num_index_range = [-1,-1]
-                        cur_multiple = 1
             elif self.expr[loop_count][1] == "others":
                 if self.expr[loop_count-1][1] in ["number", "tens", "hundred", "thousand", "million", "billion"] and loop_count-1 >= 0:
                     print("other at " + str(loop_count) + ", number at " + str(loop_count -1))
@@ -175,6 +178,7 @@ class Calculator:
                         print("first multiplier " + str(self.expr[loop_count][0]))
                         self.num_index_range[0] = loop_count
                     else:
+                        print(self.prev_prio)
                         print("higher multiplier")
                         self.num_index_range[1] = loop_count
                     self.cur_num.append(self.expr[loop_count][0])
@@ -220,13 +224,13 @@ class Calculator:
             if query == "":
                 index += 1
                 continue
-            if query[0].isdigit() or query.startswith("(") or query.startswith("-"):
+            if query[0].isdigit() or query.startswith("(") or query.startswith("-"):          
                 try:
-                    res = eval(query)
+                    res =  eval(compile(query, '<string>', 'eval', __future__.division.compiler_flag))
                     print(query + "=" + str(res))
                     self.result.append(query + "=" + str(res))
-                except:
-                    self.result.append("error")
+                except TypeError:
+                    self.result.append("Please include the multiplication operator (*) before or after parentheses, wherever applicable.")
                     traceback.print_exc()
             else:
                 cur_index = index+1
@@ -236,6 +240,7 @@ class Calculator:
                 op_list.insert(0,query1)
                 while(cur_index < len(splitQueries)):
                     if splitQueries[cur_index].isdigit():
+                        splitQueries[cur_index] = splitQueries[cur_index]+"s"
                         op_list.append(splitQueries[cur_index])
                     else: break
                     cur_index += 1
@@ -249,11 +254,13 @@ class Calculator:
                     for num in nums:
                         if num in ["", "s"]:
                             nums.remove(num)
+                    nums.pop()
+                    print("nums:")
                     print(nums)
                     if nums[0].startswith("p"):
                         op_string = "*".join(nums[1:])
                         try:
-                            res = eval(op_string)
+                            res  = eval(compile(op_string, '<string>', 'eval', __future__.division.compiler_flag))
                             print(op_string + "=" + str(res))
                             self.result.append(op_string + "=" + str(res))
                         except:
@@ -262,7 +269,7 @@ class Calculator:
                     if nums[0].startswith("s"):
                         op_string = "+".join(nums[1:])
                         try:
-                            res = eval(op_string)
+                            res  = eval(compile(op_string, '<string>', 'eval', __future__.division.compiler_flag))
                             print(op_string + "=" + str(res))
                             self.result.append(op_string  + "=" + str(res))
                         except:
@@ -271,7 +278,7 @@ class Calculator:
                     if nums[0].startswith("d"):
                         op_string = "-".join(nums[1:])
                         try:
-                            res = eval(op_string)
+                            res  = eval(compile(op_string, '<string>', 'eval', __future__.division.compiler_flag))
                             print(op_string + "=" + str(res))
                             self.result.append(op_string  + "=" + str(res))
                         except:
@@ -289,7 +296,7 @@ class Calculator:
                     if nums[0].startswith("m") or nums[0].startswith("r"):
                         op_string = "%".join(nums[1:])
                         try:
-                            res = eval(op_string)
+                            res  = eval(compile(op_string, '<string>', 'eval', __future__.division.compiler_flag))
                             print(op_string + "=" + str(res))
                             self.result.append(op_string  + "=" + str(res))
                         except:
@@ -299,7 +306,9 @@ class Calculator:
             index += 1     
                 
     def tagExpr(self):
-        query = self.query.lower()
+        query1 = self.query.lower()
+        query2 = re.split("[()\+\-*/%\s]", query1)
+        query = "".join(query1)
         print(query)
 ################################tagging################################################
         tagger = nltk.RegexpTagger(self.patterns)
