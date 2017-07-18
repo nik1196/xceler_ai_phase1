@@ -24,7 +24,7 @@ class Calculator:
         self.patterns = [(self.number, "number"),(self.tens, "tens"),("hundred", "hundred"),\
                     ("thousand", "thousand"), ("million", "million"), \
                     ("billion", "billion"),("plus|\+","plus"), ("minus|\-","minus"),("negative","minus"),\
-                         ("positive","plus"),("point","point"),('divided by',"by"),("by|upon", "by"), ("times|\*|multiplied by","times")\
+                         ("positive","plus"),("point","point"),('divided by',"by"),("by|upon|/", "by"), ("times|\*","times")\
                          ,("mod|modulo|%","mod"),("\d+", "numeric"), (".+?","others")]
         self.pattern_tags = ["number", "tens", "hundred", "thousand", "million", "billion", "plus",\
                              "minus", "by","times","mod"]
@@ -207,10 +207,20 @@ class Calculator:
     def separateForms(self):
         words = []
         #words = [word for (word,etc) in self.expr]
-        for (val1, val2) in self.expr:
+        for i in range(len(self.expr)):
+            print(self.expr[i])
+            val1 = self.expr[i][0]
+            val2 = self.expr[i][1]
             if val2 == "others":
                 if val1 in self.recognised_words:
                     words.append(str(val1))
+                if (val1 == "(" and self.expr[i-1][1] in ["numeric", "converted"]):
+                    if i>0:
+                        words.append("*")
+            elif val2 == "numeric": 
+                if i>0 and self.expr[i-1][0] == ")":
+                    words.append("*")
+                words.append(str(val1))
             else: words.append(str(val1))
         joinedQuery = "".join(words)
         print(joinedQuery)
@@ -231,6 +241,9 @@ class Calculator:
                     self.result.append(query + "=" + str(res))
                 except TypeError:
                     self.result.append("Please include the multiplication operator (*) before or after parentheses, wherever applicable.")
+                    traceback.print_exc()
+                except:
+                    self.result.append("Error")
                     traceback.print_exc()
             else:
                 cur_index = index+1
@@ -307,8 +320,13 @@ class Calculator:
                 
     def tagExpr(self):
         query1 = self.query.lower()
-        query2 = re.split("[()\+\-*/%\s]", query1)
-        query = "".join(query1)
+        query2 = re.escape(query1)
+        query3 = re.split("([()+\-/%\s*])", query1)
+        print(query3)
+        for ele in query3:
+            if ele == " ":
+                query3.remove(ele)
+        query = " ".join(query3)
         print(query)
 ################################tagging################################################
         tagger = nltk.RegexpTagger(self.patterns)
